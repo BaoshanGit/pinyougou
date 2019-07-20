@@ -2,15 +2,26 @@ package com.pinyougou.entity;
 
 import com.pinyougou.pojo.TbGoods;
 import com.pinyougou.pojo.TbGoodsDesc;
+import com.pinyougou.pojo.TbItem;
 
 /**
  * 商品实体类
  */
 import java.io.Serializable;
+import java.util.List;
 
 public class Goods implements Serializable {
     private TbGoods goods;
     private TbGoodsDesc goodsDesc;
+    private List<TbItem> itemList;
+
+    public List<TbItem> getItemList() {
+        return itemList;
+    }
+
+    public void setItemList(List<TbItem> itemList) {
+        this.itemList = itemList;
+    }
 
     public TbGoods getGoods() {
         return goods;

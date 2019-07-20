@@ -14,7 +14,11 @@ public class TbGoods implements Serializable {
 
     private String auditStatus;
 
+    private  String auditStatusStr;//状态信息转换
+
     private String isMarketable;
+
+    private String isMarketableStr;//上下架状态
 
     private Long brandId;
 
@@ -76,12 +80,44 @@ public class TbGoods implements Serializable {
         this.auditStatus = auditStatus == null ? null : auditStatus.trim();
     }
 
+    public String getAuditStatusStr() {
+        //0 '未审核',1 '已审核',2 '审核未通过',3 '关闭'
+        if ("0".equals(auditStatus) ){
+            auditStatusStr = "等待审核";
+        }
+        if ("1".equals(auditStatus) ){
+            auditStatusStr = "审核通过";
+        }
+        if ("2".equals(auditStatus) ){
+            auditStatusStr = "已驳回";
+        }
+        return auditStatusStr;
+    }
+
+    public void setAuditStatusStr(String auditStatusStr) {
+        this.auditStatusStr = auditStatusStr;
+    }
+
     public String getIsMarketable() {
         return isMarketable;
     }
 
     public void setIsMarketable(String isMarketable) {
         this.isMarketable = isMarketable == null ? null : isMarketable.trim();
+    }
+
+    public String getIsMarketableStr() {
+        if ("0".equals(isMarketable)){
+            isMarketableStr = "下架";
+        }
+        if ("1".equals(isMarketable)){
+            isMarketableStr = "上架";
+        }
+        return isMarketableStr;
+    }
+
+    public void setIsMarketableStr(String isMarketableStr) {
+        this.isMarketableStr = isMarketableStr;
     }
 
     public Long getBrandId() {

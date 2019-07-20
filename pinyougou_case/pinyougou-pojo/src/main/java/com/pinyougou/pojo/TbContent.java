@@ -14,6 +14,7 @@ public class TbContent implements Serializable {
     private String pic;
 
     private String status;
+    private String statusStr;// 0：无效；1：有效
 
     private Integer sortOrder;
 
@@ -63,6 +64,19 @@ public class TbContent implements Serializable {
 
     public void setStatus(String status) {
         this.status = status == null ? null : status.trim();
+    }
+
+    public String getStatusStr() {
+        if ("0".equals(status)){
+            statusStr = "无效";
+        }else if ("1".equals(status)){
+            statusStr="有效";
+        }
+        return statusStr;
+    }
+
+    public void setStatusStr(String statusStr) {
+        this.statusStr = statusStr;
     }
 
     public Integer getSortOrder() {

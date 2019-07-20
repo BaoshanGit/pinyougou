@@ -1,7 +1,13 @@
 package com.pinyougou.sellergoods.service.impl;
 import java.util.List;
+import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.pinyougou.entity.PageResult;
+import com.pinyougou.mapper.TbSpecificationOptionMapper;
+import com.pinyougou.pojo.TbSpecificationOption;
+import com.pinyougou.pojo.TbSpecificationOptionExample;
+import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
@@ -11,6 +17,7 @@ import com.pinyougou.pojo.TbTypeTemplate;
 import com.pinyougou.pojo.TbTypeTemplateExample;
 import com.pinyougou.pojo.TbTypeTemplateExample.Criteria;
 import com.pinyougou.sellergoods.service.TypeTemplateService;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 服务实现层
@@ -22,7 +29,12 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 
 	@Autowired
 	private TbTypeTemplateMapper typeTemplateMapper;
-	
+
+	@Autowired
+	private TbSpecificationOptionMapper tbSpecificationOptionMapper;
+
+	@Autowired
+	private RedisTemplate redisTemplate;
 	/**
 	 * 查询全部
 	 */
@@ -102,8 +114,60 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 	
 		}
 		
-		Page<TbTypeTemplate> page= (Page<TbTypeTemplate>)typeTemplateMapper.selectByExample(example);		
+		Page<TbTypeTemplate> page= (Page<TbTypeTemplate>)typeTemplateMapper.selectByExample(example);
+
+		//缓存redis数据
+			saveToRedis();
 		return new PageResult(page.getTotal(), page.getResult());
 	}
-	
-}
+
+	@Override
+	public List<Map> specList(Long id) {
+		/*//根据模板ID进行查询数据
+		TbTypeTemplate tbTypeTemplate = typeTemplateMapper.selectByPrimaryKey(id);
+		String specIds = tbTypeTemplate.getSpecIds();//数据结构为[{"id":33,"text":"电视屏幕尺寸"}]的json数据
+		//数据转换
+		List<Map> mapList = JSON.parseArray(specIds, Map.class);
+		for (Map map : mapList) {
+			TbSpecificationOptionExample example=new TbSpecificationOptionExample();
+			TbSpecificationOptionExample.Criteria criteria = example.createCriteria();
+			Long specId =new Long( (Integer)map.get("id"));
+			criteria.andSpecIdEqualTo(specId);
+			List<TbSpecificationOption> tbSpecificationOptions = tbSpecificationOptionMapper.selectByExample(example);
+			map.put("option",tbSpecificationOptions);
+		}
+		return mapList;*/
+
+		//查询模板
+		TbTypeTemplate typeTemplate = typeTemplateMapper.selectByPrimaryKey(id);
+
+		List<Map> list = JSON.parseArray(typeTemplate.getSpecIds(), Map.class)  ;
+		for(Map map:list){
+			//查询规格选项列表
+			TbSpecificationOptionExample example=new TbSpecificationOptionExample();
+			com.pinyougou.pojo.TbSpecificationOptionExample.Criteria criteria = example.createCriteria();
+			criteria.andSpecIdEqualTo( new Long( (Integer)map.get("id") ) );
+			List<TbSpecificationOption> options = tbSpecificationOptionMapper.selectByExample(example);
+			map.put("options", options);
+		}
+		return list;
+	}
+
+	//缓存数据到redis
+	public void saveToRedis(){
+		List<TbTypeTemplate> templateList = findAll();
+		for (TbTypeTemplate tbTypeTemplate : templateList) {
+			//缓存brandId
+			String brandIds = tbTypeTemplate.getBrandIds();
+			List<Map> maps = JSON.parseArray(brandIds, Map.class);
+			redisTemplate.boundHashOps("brandList").put(tbTypeTemplate.getId(),maps);
+
+			//缓存规格数据
+			//调用specList方法获取规格数据
+			List<Map> specList = specList(tbTypeTemplate.getId());
+			redisTemplate.boundHashOps("specList").put(tbTypeTemplate.getId(),specList);
+		}
+		System.out.println("缓存规格数据到redis。。。");
+	}
+
+	}

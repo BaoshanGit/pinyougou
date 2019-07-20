@@ -4,6 +4,7 @@ import java.util.List;
 import com.pinyougou.entity.Goods;
 import com.pinyougou.entity.PageResult;
 import com.pinyougou.pojo.TbGoods;
+import com.pinyougou.pojo.TbItem;
 
 /**
  * 服务层接口
@@ -35,7 +36,14 @@ public interface GoodsService {
 	/**
 	 * 修改
 	 */
-	public void update(TbGoods goods);
+	public void update(Goods goods);
+
+	/**
+	 * 运营商审核商品
+	 * @param goodsIds
+	 * @param status
+	 */
+	public void managerAudit(Long[] goodsIds ,String status);
 	
 
 	/**
@@ -43,7 +51,7 @@ public interface GoodsService {
 	 * @param id
 	 * @return
 	 */
-	public TbGoods findOne(Long id);
+	public Goods findOne(Long id);
 	
 	
 	/**
@@ -59,5 +67,29 @@ public interface GoodsService {
 	 * @return
 	 */
 	public PageResult findPage(TbGoods goods, int pageNum, int pageSize);
-	
+
+	/**
+	 * 运营商删除数据
+	 * @param ids
+	 */
+	void managerDelete(Long[] ids);
+
+
+	//运营商商品审核查询
+	PageResult goodsfFindPage(TbGoods goods, int pageNum, int pageSize);
+
+	/**
+	 * 商品上下架
+	 * @param goodsIds
+	 */
+	void isPutaway(Long[] goodsIds ,String putaway);
+
+
+	/**
+	 * 根据id查询TbItem
+	 * @param goodsIds
+	 * @param status
+	 * @return
+	 */
+	public List<TbItem> findByGoodsIdAndPutaway(Long[] goodsIds , String status);
 }
